@@ -12,9 +12,7 @@ This project is an adaptation for the **Arduino Nano ESP32** of the original dig
 - **Band Scan**: Automatic frequency scanning functionality.
 - **Non-Volatile Memory**: Automatic saving of the last frequency and settings in the (emulated) EEPROM.
 - **Configuration Menu**: Adjust IF offsets, band limits, and calibrate the Si5351 directly using the encoder.
-![electronic](images/electronic.jpeg)
-![ecran oled](images/ecran-oled.jpeg)
-![arduino nano esp32](images/arduino-nano-esp32.jpeg)
+
 ## 🌐 Advanced Web Interface (v2.7)
 
 The project includes a powerful, responsive web interface for remote control and advanced configuration:
@@ -35,7 +33,7 @@ The project includes a powerful, responsive web interface for remote control and
 - **Customization**: 5 distinct color themes (Classic Green, Vintage Amber, Deep Blue, Arctic White, Emergency Red).
 - **Memory Management**: 5 memory slots with quick load, long-press save, and a global "Reset Memories" function.
 - **Network Stability**: Built-in request throttling and error handling to ensure ESP32 stability under high usage.
-![Web Interface](images/Web-Interface.png) with new interface web
+
 ## 🛠 Hardware Parts
 - **Board**: Arduino Nano ESP32.
 - **Clock Generator**: [Si5351A](doc/Si5351-B.pdf) module (3 outputs).
@@ -111,7 +109,7 @@ Referring to `vfo.h` and `input.cpp`:
  * Copyright (c) 2019, Vincent Hervieux vincent.hervieux@gmail.com 
  * https://gitlab.com/croutor/arduino-cibi-vfo
  * Copyright (c) 2026, Patrick Ancher zeltron2k3@gmail.com
- * https://github.com/ZelTroN-2k3/arduino-cibi-vfo
+ * https://github.com/ZelTroN-2k3/arduino-cibi-vfo-esp32
  * 
  * All rights reserved.
  * 
@@ -120,4 +118,4 @@ Referring to `vfo.h` and `input.cpp`:
  */
 
 ---
-GitHub Repository: [https://github.com/ZelTroN-2k3/arduino-cibi-vfo](https://github.com/ZelTroN-2k3/arduino-cibi-vfo)
+GitHub Repository: [https://github.com/ZelTroN-2k3/arduino-cibi-vfo-esp32](https://github.com/ZelTroN-2k3/arduino-cibi-vfo-esp32)

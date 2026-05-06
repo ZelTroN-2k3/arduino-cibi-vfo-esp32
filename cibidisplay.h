@@ -2,7 +2,7 @@
  * Copyright (c) 2019, Vincent Hervieux vincent.hervieux@gmail.com 
  * https://gitlab.com/croutor/arduino-cibi-vfo
  * Copyright (c) 2026, Patrick Ancher zeltron2k3@gmail.com
- * https://github.com/ZelTroN-2k3/arduino-cibi-vfo
+ * https://github.com/ZelTroN-2k3/arduino-cibi-vfo-esp32
  * 
  * All rights reserved.
  * 
