@@ -114,7 +114,7 @@ Referring to `vfo.h` and `input.cpp`:
 - **D10** = INPUT FM +3.3v
 - **D9** = INPUT USB +3.3v
 - **D8** = INPUT LSB +3.3v
-- **D6** = CONFIG MENU (active low) - masse
+- **A0** = CONFIG MENU (active low) - masse
 - **D5** = TX (active low) - masse
 - **D4** = Button pin (active low) - masse
 - **D3** = Rotary encoder A
