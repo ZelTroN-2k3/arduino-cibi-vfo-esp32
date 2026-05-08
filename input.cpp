@@ -37,29 +37,29 @@
 
 /* PINS ASSIGNEMENT */
 /* Encoder pins: */
-#define PIN_ENC_B       2
-#define PIN_ENC_A       3
-#define PIN_ENC_SW      4
+#define PIN_ENC_B       2 // Rotary encoder B
+#define PIN_ENC_A       3 // Rotary encoder A
+#define PIN_ENC_SW      4 // Button pin (active low)
 /* Inputs Pins active on low level */
-#define PIN_TX          5
-#define PIN_MODE_CONFIG A0
+#define PIN_TX          5 // TX (active low)
+#define PIN_MODE_CONFIG 6 // CONFIG MENU (active low)
 #ifdef TRANSVERTER
-#define PIN_MODE_TRANS  7
+#define PIN_MODE_TRANS  7 // le mode Transverter
 #endif
 /* Inputs: Modulation pins (protected by a 10k resistor bridge ) */
 /* 0: Active on low level */
 /* 1: Active on high level */
 #define INPUT_MODULATION_ACTIVE_HIGH 1
-#define PIN_LSB         8
-#define PIN_USB         9
-#define PIN_FM         10
-#define PIN_AM         11
-#define PIN_CW         12
+#define PIN_LSB         8 // INPUT LSB
+#define PIN_USB         9 // INPUT USB
+#define PIN_FM         10 // INPUT FM
+#define PIN_AM         11 // INPUT AM
+#define PIN_CW         12 // INPUT CW
 #define PIN_LED        13 /* builtin LED*/
 /* Input: analog */
-#define PIN_INCREMENT  A1
-#define PIN_CLARIFIER  A2
-#define PIN_SMETER     A3
+#define PIN_INCREMENT  A1 // Step/increment mode (active low)
+#define PIN_CLARIFIER  A2 // Clarifier input (analog)
+#define PIN_SMETER     A3 // S-meter input (analog)
 /* IIC is using pins A4 and A5 to connect OLED's bus and si5351's bus */
 
 ClickEncoder Input::encoder_(PIN_ENC_A, PIN_ENC_B, PIN_ENC_SW, 4, LOW);
