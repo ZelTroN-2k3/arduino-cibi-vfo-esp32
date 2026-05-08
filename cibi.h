@@ -47,14 +47,19 @@ public:
      - the dds
   */
   Cibi(Config& _config, Input& _input, U8G2& _display, DDS& _dds);
-  Cibi(const Cibi &_cibi);
   ~Cibi();
+
+  // Disable copy constructor and assignment operator for memory safety
+  Cibi(const Cibi&) = delete;
+  Cibi& operator=(const Cibi&) = delete;
+
   /* main application loop called when the application has the focus */
   void loop(bool _update_display = false);
   /* getter on current frequency */
   const uint32_t& getCurrentFreq();
   /* setters/getters for web interface */
   void setFrequency(uint32_t freq);
+  void setModulation(int modulation);
   int getModulation() const { return current_modulation_; }
   int getSMeter() const { return current_smeter_; }
   bool isTx() const { return current_tx_; }

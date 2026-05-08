@@ -36,5 +36,6 @@
 
 extern uint32_t quick_pow10(int n);
 extern uint32_t add_int32_to_uint32(uint32_t a, int32_t b);
+extern const char* getBandName(uint32_t _freq);
 
 #endif /* UTILS_H */

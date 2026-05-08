@@ -51,3 +51,21 @@ uint32_t add_int32_to_uint32(uint32_t a, int32_t b)
     return a + abs(b);
   }
 }
+
+const char* getBandName(uint32_t _freq)
+{
+    if      (135700   <= _freq && _freq <= 137800)    return "2222";
+    else if (472000   <= _freq && _freq <= 479000)    return "630m";
+    else if (1800000  <= _freq && _freq <= 2000000)   return "160m";
+    else if (3500000  <= _freq && _freq <= 4000000)   return "80m";
+    else if (5351500  <= _freq && _freq <= 5366500)   return "60m";
+    else if (7000000  <= _freq && _freq <= 7300000)   return "40m";
+    else if (10100000 <= _freq && _freq <= 10150000)  return "30m";
+    else if (14000000 <= _freq && _freq <= 14350000)  return "20m";
+    else if (18068000 <= _freq && _freq <= 18168000)  return "17m";
+    else if (21000000 <= _freq && _freq <= 21450000)  return "15m";
+    else if (24890000 <= _freq && _freq <= 24990000)  return "12m";
+    else if (26000000 <= _freq && _freq <= 28000000)  return "11m";
+    else if (28000000 <= _freq && _freq <= 29700000)  return "10m";
+    else return "OOB";
+}

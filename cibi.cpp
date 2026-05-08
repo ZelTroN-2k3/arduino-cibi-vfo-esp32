@@ -69,26 +69,6 @@ Cibi::Cibi(Config &_config, Input &_input, U8G2 &_display, DDS &_dds) : config_(
   updateFreqStep(current_cursor_pos_);
 }
 
-Cibi::Cibi(const Cibi &_cibi) : config_(_cibi.config_),
-                                input_(_cibi.input_),
-                                dds_(_cibi.dds_),
-                                current_cibi_channel_({.channel = _cibi.current_cibi_channel_.channel,
-                                                       .band = _cibi.current_cibi_channel_.band,
-                                                       .bis = _cibi.current_cibi_channel_.bis}),
-                                current_freq_(_cibi.current_freq_),
-                                freq_change_time_(_cibi.freq_change_time_),
-                                current_clarifier_(_cibi.current_clarifier_),
-                                freq_step_(_cibi.freq_step_),
-                                current_cursor_pos_(_cibi.current_cursor_pos_),
-                                current_modulation_(_cibi.current_modulation_),
-                                current_smeter_(_cibi.current_smeter_),
-                                current_mem_index_(_cibi.current_mem_index_),
-                                current_tx_(_cibi.current_tx_),
-                                scanning_(_cibi.scanning_),
-                                view_(_cibi.view_)
-{
-}
-
 Cibi::~Cibi()
 {
   delete view_;
@@ -167,30 +147,24 @@ void Cibi::updateDisplay(uint32_t _frequency, int _position, int _modulation, bo
                                .band = CIBI_BAND_UNKNOWN,
                                .bis = false});
   uint32_t clarified_freq = add_int32_to_uint32(current_freq_, current_clarifier_);
-  if (_frequency != clarified_freq ||
-      current_cibi_channel_.channel != cibi_channel.channel ||
-      _position != current_cursor_pos_ ||
-      _modulation != current_modulation_ ||
-      _tx != current_tx_)
-  {
+  
+  bool freqChanged = (_frequency != clarified_freq || _position != current_cursor_pos_ || _tx != current_tx_);
+  bool modChanged = (_modulation != current_modulation_);
+  bool smChanged = (abs(_smeter - current_smeter_) > 1);
+
+  // If frequency or modulation changed, we likely need a fuller update
+  if (freqChanged || modChanged) {
     view_->clear();
-    /* TODO: could be optimized to update only the impacted digits */
     view_->setTx(_tx);
     view_->setFreq(_frequency, (_tx? BLACK : WHITE));
-    /* if withing the 10-11m band, check for Cibi channels */
-    /* Outside this range, set HAM bands */
+
     bool cibiBand = (0 == getCibiChannel(_frequency, &cibi_channel));
     if(cibiBand)
     {
-#if 0 // def DEBUG
-      Serial.println(cibi_channel.channel);
-#endif // DEBUG
       view_->setCibiChannel(cibi_channel.channel, WHITE);
       current_cibi_channel_.channel = cibi_channel.channel;
-
       view_->setCibiBand(cibi_channel.band, WHITE);
       current_cibi_channel_.band = cibi_channel.band;
-
       view_->setCibiChannelBis(cibi_channel.bis, WHITE);
       current_cibi_channel_.bis = cibi_channel.bis;
     }
@@ -204,14 +178,23 @@ void Cibi::updateDisplay(uint32_t _frequency, int _position, int _modulation, bo
     view_->setCursorPos(_position, WHITE);
     view_->setModulation(_modulation, WHITE);
 #ifdef SMETER_DISPLAY
-    view_->setSMeter(_smeter);
-#else
-    view_->display();
+    view_->setSMeter(_smeter / 48); 
 #endif
-    clarified_freq = _frequency;
-    current_cibi_channel_.channel = cibi_channel.channel;
+    view_->display(); // Full refresh
+    
     current_cursor_pos_ = _position;
     current_modulation_ = _modulation;
+    current_smeter_ = _smeter;
+    current_tx_ = _tx;
+  } 
+  else if (smChanged) {
+    // Only S-meter changed: Update Zone 0 only
+#ifdef SMETER_DISPLAY
+    view_->clearZone(0);
+    view_->setSMeter(_smeter / 48);
+    view_->displayZone(0); // Partial refresh (much faster)
+#endif
+    current_smeter_ = _smeter;
   }
 }
 #endif
@@ -556,6 +539,11 @@ void Cibi::setFrequency(uint32_t freq)
     freq_change_time_ = millis();
     input_.setBuiltInLED(HIGH);
   }
+}
+
+void Cibi::setModulation(int modulation)
+{
+  input_.setModulation(modulation);
 }
 
 #if 0

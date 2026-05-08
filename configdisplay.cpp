@@ -87,6 +87,7 @@ void ConfigDisplay::setTitle(int _title_index, uint16_t _color)
     const static char title_fi_lsb[] PROGMEM            = "     FI LSB";
     const static char title_vfo_adj[] PROGMEM           = "  VFO FREQ. ADJ";
     const static char title_clarifier_adj[] PROGMEM     = "CLARIFIER FREQ. ADJ";
+    const static char title_clarifier_center[] PROGMEM  = "CLARIFIER ADC CENTER";
     const static char title_smeter_adj[] PROGMEM        = "   S-METER ADJ";
     const static char* const titles[] PROGMEM = {
         title_cibi_default_freq,
@@ -98,6 +99,7 @@ void ConfigDisplay::setTitle(int _title_index, uint16_t _color)
         title_fi_lsb,
         title_vfo_adj,
         title_clarifier_adj,
+        title_clarifier_center,
         title_smeter_adj
     };
     char str[MAX_STR_LENGTH] = {0};

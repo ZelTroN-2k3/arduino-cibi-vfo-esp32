@@ -35,6 +35,7 @@
  ***/
 #include "cibidisplay.h"
 #include "vfo.h"
+#include "utils.h"
 
 #include <Arduino.h>
 #if defined(__AVR__)
@@ -101,10 +102,41 @@ void CibiDisplay::clear()
   display_.clearBuffer();
 }
 
+void CibiDisplay::clearZone(int _zone)
+{
+  display_.setDrawColor(BLACK);
+  if (_zone == 0)      display_.drawBox(0, 0, 128, 16);
+  else if (_zone == 1) display_.drawBox(0, 17, 128, 23);
+  else if (_zone == 2) display_.drawBox(0, 41, 128, 23);
+  display_.setDrawColor(WHITE);
+  
+  // Redraw static elements for this zone
+  if (_zone == 0) {
+    display_.setFont(u8g2_font_6x10_tr);
+    display_.setCursor(5, 8);
+    display_.print(F("SIG.1.3.5.7.9..+30dB"));
+  } else if (_zone == 1) {
+    display_.drawDisc(32, 35, 2, WHITE);
+    display_.setCursor(120, 24); display_.print(F("M"));
+    display_.setCursor(120, 33); display_.print(F("H"));
+    display_.setCursor(120, 40); display_.print(F("z"));
+    display_.drawHLine(0, 16, 118);
+  } else if (_zone == 2) {
+    display_.drawHLine(0, 40, 118);
+  }
+}
+
 void CibiDisplay::display()
 {
   init();
   display_.sendBuffer();
+}
+
+void CibiDisplay::displayZone(int _zone)
+{
+  if (_zone == 0)      display_.updateDisplayArea(0, 0, 16, 2);
+  else if (_zone == 1) display_.updateDisplayArea(0, 2, 16, 3);
+  else if (_zone == 2) display_.updateDisplayArea(0, 5, 16, 3);
 }
 
 void CibiDisplay::setFreq(uint32_t _freq, uint16_t _color) 
@@ -231,59 +263,7 @@ void CibiDisplay::setBand(uint32_t _freq, uint16_t _color)
   display_.setFont(u8g2_font_crox5hb_tr);
   display_.setCursor(BAND_TEXT_POS_X,BAND_TEXT_POS_Y);
   display_.setDrawColor(_color);
-  if(135700 <=_freq && _freq <= 137800)
-  {
-    /* For this band do not print 'm' to earn on string's lenght */ 
-    display_.print(F("2222"));
-  }
-  else if(472000 <=_freq && _freq <= 479000)
-  {
-    display_.print(F("630m"));
-  }
-  else if(1800000 <=_freq && _freq <= 2000000)
-  {
-    display_.print(F("160m"));
-  }
-  else if(3500000 <= _freq && _freq <= 4000000)
-  {
-    display_.print(F("80m"));
-  }
-  else if(5351500 <= _freq && _freq <= 5366500)
-  {
-    display_.print(F("60m"));
-  }
-  else if(7000000 <= _freq && _freq <= 7300000)
-  {
-    display_.print(F("40m"));
-  }
-  else if(10100000 <= _freq && _freq <= 10150000)
-  {
-    display_.print(F("30m"));
-  }
-  else if(14000000 <= _freq && _freq <= 14350000)
-  {
-    display_.print(F("20m"));
-  }
-  else if(18068000 <= _freq && _freq <= 18168000)
-  {
-    display_.print(F("17m"));
-  }
-  else if(21000000 <= _freq && _freq <= 21450000)
-  {
-    display_.print(F("15m"));
-  }
-  else if(24890000 <= _freq && _freq <= 24990000)
-  {
-    display_.print(F("12m"));
-  }
-  else if(28000000 <= _freq && _freq <= 29700000)
-  {
-    display_.print(F("10m"));
-  }
-  else
-  {
-    display_.print(F("OOB"));
-  }
+  display_.print(getBandName(_freq));
 }
 
 #ifdef SMETER_DISPLAY
@@ -297,7 +277,6 @@ void CibiDisplay::setSMeter(int _signal)
   {
     display_.drawBox(12 + index * 5, 11, 4, 4);
   }
-  display();
 }
 #endif
 

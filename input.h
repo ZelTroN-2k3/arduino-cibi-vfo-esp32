@@ -86,22 +86,34 @@ class Input
     const int getSMeter();
     const int getClarifier();
     /* setters */
+    void setModulation(int modulation);
+    void setClarifierCenter(uint32_t center);
     void setBuiltInLED(uint8_t value) const;
 
   private:
     static void timerIsr();
     /* store the current modulation */
     uint8_t modulation_ : 3;
+    /* store web override */
+    bool web_override_ : 1;
     /* store the current application mode */
     uint8_t application_mode_ : 2;
     /* store the current increment mode */
     uint8_t increment_mode_ : 1;
     /* store the RX/TX mode */
     uint8_t tx_ : 1; /* 1: transmitting, 0: receiving */
+    /* last physical modulation read */
+    uint8_t last_physical_modulation_ : 3;
     /* store clarifier input */
     int clarifier_;
+    /* clarifier ADC center calibration */
+    uint32_t clarifier_center_;
+    /* smoothed clarifier for stable tuning */
+    float smoothed_clarifier_;
     /* store SMeter input */
     int smeter_;
+    /* smoothed smeter for display */
+    float smoothed_smeter_;
     /* smeter sample period */
     int smeter_sampling_;
     /* button state */

@@ -8,25 +8,44 @@ This project is an adaptation for the **Arduino Nano ESP32** of the original dig
 - **Si5351 Frequency Synthesis**: Perfect digital stability, replacing old crystals and PLL circuits.
 - **OLED Display (128x64)**: Real-time display of frequency, channel, band, modulation mode, and digital S-meter.
 - **Multi-mode Support**: Automatic handling of Intermediate Frequencies (IF) for AM, FM, USB, LSB, and CW.
-- **Digital Clarifier**: Fine-tune reception via a potentiometer.
+- **Remote Control & Monitoring**: 
+  - **Full Mode Selection**: Change radio modes (CW, AM, FM, USB, LSB) directly from the web interface.
+  - **Intelligent Override**: Digital commands are respected unless the physical radio switch is moved, which then regains priority.
+  - **Real-time Status**: Live monitoring of RX/TX state and connection health (Online/Offline) via a modernized web header.
+  - **Throttled Tuning**: High-speed virtual knob support with 50ms request throttling to prevent server saturation.
+- **WiFiManager Integration**: No more hardcoded credentials. Easy WiFi setup via a captive portal (`CIBI-VFO-ESP32-AP`).
+- **ESP32 Optimized**: 
+  - **Single-Cycle Refresh**: Zoned OLED update logic (top/middle/bottom) reducing I2C traffic by up to 75% for S-meter updates.
+  - **Signal Filtering**: Exponential Moving Average (EMA) filtering on S-meter and Clarifier for smooth, jitter-free "analog" feel.
+  - **12-bit Precision**: Native ESP32 ADC resolution (0-4095) for high-sensitivity signal and tuning measurement.
+  - **Asynchronous WiFi**: Non-blocking network stack ensuring VFO responsiveness even during connection attempts or portal configuration.
+  - **Hardware Stability**: Internal pull-down resistors enabled for all modulation inputs to prevent floating state interference.
+  - **Watchdog**: ESP32 Task Watchdog Timer (TWDT) for maximum system reliability.
+- **Digital Clarifier**: Fine-tune reception via a potentiometer with software-based center calibration.
 - **Band Scan**: Automatic frequency scanning functionality.
 - **Non-Volatile Memory**: Automatic saving of the last frequency and settings in the (emulated) EEPROM.
-- **Configuration Menu**: Adjust IF offsets, band limits, and calibrate the Si5351 directly using the encoder.
+- **Configuration Menu**: Adjust IF offsets, band limits, calibrate the Si5351, and set Clarifier ADC center directly using the encoder.
 
-## 🌐 Advanced Web Interface (v2.7)
+## 🌐 Advanced Web Interface (v2.9)
 
 The project includes a powerful, responsive web interface for remote control and advanced configuration:
 
-- **Professional Display**: High-precision frequency display (00.000.000 MHz) with synchronized Channel and Band indicators.
+- **Professional Display**: Realistic **'Seven Segment'** digital font for high-precision frequency and channel indicators.
+- **Dedicated Channel LCD**: Large integrated LCD-style display specifically for CB channel visualization (with Alpha/Bis support).
+- **Advanced Memory Buttons**: 
+    - Real-time display of stored Label, Channel, and Formatted Frequency.
+    - Active selection indicator with theme-aware glow.
+    - Visual feedback (progress bar) when holding to save.
+- **Real-time Status**: 200ms polling interval for stability, using optimized JSON memory management.
 - **Dual Virtual Knobs**: 
-  - **Tuning Knob (Blue)**: High-resolution fine tuning (100 Hz steps).
-  - **Channel Knob (Orange)**: Standard CB channel switching (10 kHz steps).
+    - **Tuning Knob (Blue)**: High-resolution fine tuning (100 Hz steps).
+    - **Channel Knob (Orange)**: Standard CB channel switching (10 kHz steps) with 1-40 indexed ticks.
 - **Responsive Design**: Optimized for both Desktop and Mobile devices.
-- **Interactive S-Meter**: Real-time signal strength visualization synced with the radio.
-- **Haptic Feedback**: Vibration support on mobile devices for virtual encoder "clicks" and memory actions.
+- **Interactive S-Meter & Waterfall**: Real-time signal strength visualization and spectrum history.
 - **Web-based Advanced Settings (⚙️)**:
-  - **Calibration**: Real-time VFO/Si5351 correction adjustment.
-  - **IF Offsets**: Configure AM, USB, and LSB intermediate frequencies directly from the browser.
+    - **Calibration**: Real-time VFO/Si5351 correction adjustment.
+    - **Clarifier Center**: Calibrate your physical potentiometer's center point.
+    - **IF Offsets**: Configure AM, USB, and LSB intermediate frequencies.
   - **Frequency Limits**: Set custom Min/Max frequency range.
   - **S-Meter Calibration**: Adjust S-Meter sensitivity via software.
   - **Step Increment**: Configure default frequency steps.
@@ -74,8 +93,10 @@ H-->E
 
 1.  Download the `arduino-cibi-vfo-esp32` folder.
 2.  Open `arduino-cibi-vfo-esp32.ino` in the Arduino IDE.
-3.  Install the required library via the Library Manager:
-    - **U8g2** (by olikraus).
+3.  Install the required libraries via the Library Manager:
+    - **U8g2** (by olikraus) - For the OLED display.
+    - **WiFiManager** (by tzapu) - For dynamic WiFi configuration.
+    - **Ticker** (Built-in for ESP32) - For encoder servicing.
 4.  In **Tools > Board**, select **Arduino Nano ESP32**.
 5.  Verify and Upload the code.
 
@@ -83,17 +104,17 @@ H-->E
 
 ## 🔌 Wiring
 Referring to `vfo.h` and `input.cpp`:
-- **D12** = INPUT CW
-- **D11** = INPUT AM
-- **D10** = INPUT FM
-- **D9** = INPUT USB
-- **D8** = INPUT LSB
-- **D6** = CONFIG MENU (active low)
-- **D5** = TX (active low)
-- **D4** = Button pin (active low)
+- **D12** = INPUT CW +3.3v
+- **D11** = INPUT AM +3.3v
+- **D10** = INPUT FM +3.3v
+- **D9** = INPUT USB +3.3v
+- **D8** = INPUT LSB +3.3v
+- **D6** = CONFIG MENU (active low) - masse
+- **D5** = TX (active low) - masse
+- **D4** = Button pin (active low) - masse
 - **D3** = Rotary encoder A
 - **D2** = Rotary encoder B
-- **A1** = Step/increment mode (active low)
+- **A1** = Step/increment mode (active low) - masse
 - **A2** = Clarifier input (analog)
 - **A3** = S-meter input (analog)
 - **A4** = I2C SDA
@@ -106,15 +127,12 @@ Referring to `vfo.h` and `input.cpp`:
 ## ⚖️ License & Copyright
 
 /*
- * Copyright (c) 2019, Vincent Hervieux vincent.hervieux@gmail.com 
- * https://gitlab.com/croutor/arduino-cibi-vfo
  * Copyright (c) 2026, Patrick Ancher zeltron2k3@gmail.com
  * https://github.com/ZelTroN-2k3/arduino-cibi-vfo-esp32
  * 
- * All rights reserved.
+ * Version 2.2.0 (Firmware) / v2.9 (Web Interface)
  * 
- *
- * This project is distributed under the BSD License.
+ * All rights reserved.
  */
 
 ---

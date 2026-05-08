@@ -48,6 +48,9 @@ class CibiDisplay
         void clear();
         /* refresh display */
         void display();
+        /* partial refresh */
+        void clearZone(int _zone);
+        void displayZone(int _zone);
         /* Update displayed frequency */
         void setFreq(uint32_t _frequency, uint16_t _color);
         /* Update displayed cursor position */

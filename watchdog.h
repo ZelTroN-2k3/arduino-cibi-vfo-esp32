@@ -5,34 +5,47 @@
  * https://github.com/ZelTroN-2k3/arduino-cibi-vfo-esp32
  * 
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- * * Neither the name of the author Vincent Hervieux, nor the
- *   names of its contributors may be used to endorse or promote products
- *   derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// from avr/wdt.h
-#define wdt_reset() __asm__ __volatile__ ("wdr")
-// friendly name for watchodog software interruption
+#ifndef WATCHDOG_H
+#define WATCHDOG_H
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include <esp_task_wdt.h>
+
+// For ESP32, we use the Task Watchdog Timer (TWDT)
+// Default timeout 5 seconds
+#define WDT_TIMEOUT_SECONDS 5
+
+inline void wdt_enable()
+{
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    // New API for ESP-IDF 5.x (used in newer Arduino ESP32 cores)
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = WDT_TIMEOUT_SECONDS * 1000,
+        .idle_core_mask = 0,    // Bitmask of cores
+        .trigger_panic = true,
+    };
+    esp_task_wdt_init(&twdt_config);
+#else
+    // Legacy API
+    esp_task_wdt_init(WDT_TIMEOUT_SECONDS, true);
+#endif
+    esp_task_wdt_add(NULL); // Add current thread (loop task)
+}
+
+inline void wdt_reset()
+{
+    esp_task_wdt_reset();
+}
+
+// Note: Pre-reset interrupts (ISR) are more complex on ESP32 
+// and not directly compatible with the simple AVR wdt_interrupt().
+// Frequency is already auto-saved every 30s in cibi.loop().
+
+#elif defined(__AVR__)
+#include <avr/wdt.h>
+// friendly name for watchdog software interruption
 #define wdt_interrupt() ISR(WDT_vect)
 
 inline void wdt_enable()
@@ -40,6 +53,10 @@ inline void wdt_enable()
   // Unlock watchdog register
   WDTCSR = (1 << WDCE) | (1 << WDE);
   // Set WDP2, WDP1 and WDP0 for 2 seconds countdown
-  // Set WDIE and WDE to enable a software interrrupt followed by µC reset
+  // Set WDIE and WDE to enable a software interrupt followed by µC reset
   WDTCSR = 0b01001111;
 }
+// wdt_reset() is already defined in avr/wdt.h
+#endif
+
+#endif /* WATCHDOG_H */

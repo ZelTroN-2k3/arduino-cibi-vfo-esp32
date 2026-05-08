@@ -73,30 +73,6 @@ current_value_(&context_.cibi_frequency)
   view_ = new ConfigDisplay(_display);
 }
 
-Config::Config(const Config& _config) :
-context_({ 
-  .eeprom_header = _config.context_.eeprom_header,
-  .cibi_frequency = _config.context_.cibi_frequency,
-  .cibi_min_freq = _config.context_.cibi_min_freq,
-  .cibi_max_freq = _config.context_.cibi_max_freq,
-  .freq_step_inc = _config.context_.freq_step_inc,
-  .fi_am = _config.context_.fi_am,
-  .fi_usb = _config.context_.fi_usb,
-  .fi_lsb = _config.context_.fi_lsb,
-  .vfo_adj = _config.context_.vfo_adj,
-  .clarifier_adj = _config.context_.clarifier_adj,
-  .smeter_adj = _config.context_.smeter_adj,
-}),
-input_(_config.input_),
-dds_(_config.dds_),
-view_(_config.view_),
-current_cursor_pos_(_config.current_cursor_pos_),
-current_menu_index_(_config.current_menu_index_),
-current_value_(_config.current_value_)
-{
-
-}
-
 Config::~Config()
 {
   delete view_;
@@ -126,13 +102,13 @@ void Config::loop(bool _update_display)
       /* change between menu items */
       current_menu_index_ += increment;
 
-      if (current_menu_index_ >= CONFIG_MAX)
+      if (current_menu_index_ >= CONFIG_OLED_MAX)
       {
         current_menu_index_ = 0;
       }
       else if (current_menu_index_ < 0)
       {
-        current_menu_index_ = CONFIG_MAX - 1;
+        current_menu_index_ = CONFIG_OLED_MAX - 1;
       }
 
       /* change displayed item value */
@@ -164,6 +140,9 @@ void Config::loop(bool _update_display)
           break;
         case CONFIG_CLARIFIER_ADJ:     
           current_value_ = (uint32_t*)&context_.clarifier_adj;
+          break;
+        case CONFIG_CLARIFIER_CENTER:     
+          current_value_ = &context_.clarifier_center;
           break;
         case CONFIG_SMETER_ADJ:
           current_value_ = (uint32_t*)&context_.smeter_adj;
@@ -241,8 +220,13 @@ int Config::open()
     context_.fi_usb = DEFAULT_FI_FREQ_USB;
     context_.fi_lsb = DEFAULT_FI_FREQ_LSB;
     context_.vfo_adj = DEFAULT_VFO_ADJ;
+    context_.clarifier_adj = DEFAULT_CLARIFIER_ADJ;
+    context_.clarifier_center = 2048; // Default for 12-bit ADC
     context_.smeter_adj = DEFAULT_SMETER_ADJ;
     context_.theme_color = 0; // Default Green
+    context_.show_smeter = 1; // Default Show
+    context_.show_waterfall = 1; // Default Show
+    context_.layout_mode = 0; // Default Option 1
     for(int i=0; i<5; i++) context_.memories[i] = DEFAULT_CIBI_FREQ;
   }
   return 0;
@@ -323,6 +307,11 @@ const int32_t& Config::getClarifierAdj()
   return context_.clarifier_adj;
 }
 
+const uint32_t& Config::getClarifierCenter()
+{
+  return context_.clarifier_center;
+}
+
 const int32_t& Config::getSMeterAdj()
 {
   return context_.smeter_adj;
@@ -370,6 +359,11 @@ void Config::setFiLsb(uint32_t _freq) {
 void Config::setVFOAdj(int32_t _adj) {
   context_.vfo_adj = _adj;
   dds_.setOutputCorrection(_adj);
+  save();
+}
+
+void Config::setClarifierCenter(uint32_t _center) {
+  context_.clarifier_center = _center;
   save();
 }
 

@@ -45,8 +45,12 @@ class Config
      - the DDS
     */
     Config(Input& _input, U8G2& _display, DDS& _dds);
-    Config(const Config& _config);
     ~Config();
+
+    // Disable copy constructor and assignment operator for memory safety
+    Config(const Config&) = delete;
+    Config& operator=(const Config&) = delete;
+
     /* main application loop called when the application has the focus */
     void loop(bool _update_display = false);
     /* retrieve config from EEPROM */
@@ -72,6 +76,8 @@ class Config
     const int32_t& getVFOAdj();
     /* Clarifier adjustment (replace trim pot) */
     const int32_t& getClarifierAdj();
+    /* Clarifier ADC Center calibration */
+    const uint32_t& getClarifierCenter();
     /* S-meter adjustment */
     const int32_t& getSMeterAdj();
     /* Memory management */
@@ -88,9 +94,16 @@ class Config
     void setFiUsb(uint32_t _freq);
     void setFiLsb(uint32_t _freq);
     void setVFOAdj(int32_t _adj);
+    void setClarifierCenter(uint32_t _center);
     void setSMeterAdj(int32_t _adj);
     uint32_t getTheme() { return context_.theme_color; }
     void setTheme(uint32_t _theme) { context_.theme_color = _theme; save(); }
+    uint32_t getShowSMeter() { return context_.show_smeter; }
+    void setShowSMeter(uint32_t _show) { context_.show_smeter = _show; save(); }
+    uint32_t getShowWaterfall() { return context_.show_waterfall; }
+    void setShowWaterfall(uint32_t _show) { context_.show_waterfall = _show; save(); }
+    const uint32_t getLayoutMode() { return context_.layout_mode; }
+    void setLayoutMode(uint32_t _mode) { context_.layout_mode = _mode; save(); }
   private:
     enum
     {
@@ -103,12 +116,17 @@ class Config
       CONFIG_FI_LSB,        // 6
       CONFIG_VFO_ADJ,       // 7
       CONFIG_CLARIFIER_ADJ, // 8
-      CONFIG_SMETER_ADJ,    // 9
-      CONFIG_THEME,         // 10
-      CONFIG_MAX            // 11
-    };
-    /* context stored in EEPROM */
-    struct context_t {
+      CONFIG_CLARIFIER_CENTER, // 9
+      CONFIG_SMETER_ADJ,    // 10
+      CONFIG_OLED_MAX,      // 11
+      CONFIG_THEME,
+      CONFIG_SHOW_SMETER,
+      CONFIG_SHOW_WATERFALL,
+      CONFIG_LAYOUT_MODE,
+      CONFIG_MAX            // 15
+      };
+      /* context stored in EEPROM */
+      struct context_t {
       uint32_t eeprom_header;  /* EEPROM flag to detect if we've already set values */
       uint32_t cibi_frequency; /* cibi default frequency on startup */
       uint32_t cibi_min_freq;  /* cibi minimum frequency */
@@ -119,11 +137,14 @@ class Config
       uint32_t fi_lsb;         /* FI LSB */
       int32_t  vfo_adj;        /* VFO frequency adjustment */
       int32_t  clarifier_adj;  /* Clarifier frequency adjustment */
+      uint32_t clarifier_center; /* Clarifier ADC center calibration (default 2048) */
       int32_t  smeter_adj;     /* S-Meter adjustment to fill S-meter */
       uint32_t memories[5];    /* 5 memory slots */
       uint32_t theme_color;    /* 0: Green, 1: Amber, 2: Blue, 3: White, 4: Red */
-    } context_;
-      /* references */
+      uint32_t show_smeter;    /* 1: Show, 0: Hide */
+      uint32_t show_waterfall; /* 1: Show, 0: Hide */
+      uint32_t layout_mode;    /* 0, 1, 2 for desktop layouts */
+      } context_;      /* references */
     Input& input_;
     DDS& dds_;
     ConfigDisplay *view_;
