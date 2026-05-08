@@ -42,7 +42,7 @@
 #define PIN_ENC_SW      4
 /* Inputs Pins active on low level */
 #define PIN_TX          5
-#define PIN_MODE_CONFIG 6
+#define PIN_MODE_CONFIG A0
 #ifdef TRANSVERTER
 #define PIN_MODE_TRANS  7
 #endif

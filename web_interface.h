@@ -886,6 +886,9 @@ const char* WEB_PAGE = R"=====(
         function addWFRow(val) {
             const w = wfCanvas.width;
             const h = wfCanvas.height;
+            // Correction du bug Canvas Waterfall (F11):
+            if (w <= 0 || h <= 0) return; // Security: avoid IndexSizeError if canvas is not ready
+            
             const imgData = wfCtx.getImageData(0, 0, w, h - 1);
             wfCtx.putImageData(imgData, 0, 1);
             
