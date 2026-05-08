@@ -29,7 +29,7 @@ This project is an adaptation for the **Arduino Nano ESP32** of the original dig
 ## 🌐 Advanced Web Interface (v2.9)
 
 The project includes a powerful, responsive web interface for remote control and advanced configuration:
-
+![Web Interface](images/Web-Interface.2.9.png)
 - **Professional Display**: Realistic **'Seven Segment'** digital font for high-precision frequency and channel indicators.
 - **Dedicated Channel LCD**: Large integrated LCD-style display specifically for CB channel visualization (with Alpha/Bis support).
 - **Advanced Memory Buttons**: 
@@ -61,7 +61,9 @@ The project includes a powerful, responsive web interface for remote control and
   - Rotary encoder with push button.
   - Modulation selector (wired for mode detection).
   - Potentiometers for Clarifier and S-Meter.
-
+![Ecran Oled](images/ecran-oled.jpeg)
+![Arduino Nano ESP32-S3](images/arduino-nano-esp32.jpeg)
+![Electronique](images/electronic.jpeg)
 ## 📐 Principles
 
 ### Basic Principles
