@@ -49,8 +49,8 @@
 #endif
 
 /* WIFI CONFIGURATION */
-const char* ssid = "Freebox-ZelTroN2k3"; // YOUR_SSID
-const char* password = "7AC429D2DEZ2"; // YOUR_PASSWORD
+const char* ssid = "xxxxxxxxxxxxxxxxxx"; // YOUR_SSID
+const char* password = "xxxxxxxxxxxxxx"; // YOUR_PASSWORD
 
 /// Globals:
 //U8G2_SSD1309_128X64_NONAME0_F_HW_I2C display(U8G2_R0, OLED_RESET, SCL /* A5 */ , SDA /* A4 */); // working with 2.42" only
