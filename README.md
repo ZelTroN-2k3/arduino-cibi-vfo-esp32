@@ -76,9 +76,9 @@ The project includes a powerful, responsive web interface for remote control and
   - Rotary encoder with push button.
   - Modulation selector (wired for mode detection).
   - Potentiometers for Clarifier and S-Meter.
-  - ![Ecran Oled](images/ecran-oled.jpeg)
-  - ![Arduino Nano ESP32-S3](images/arduino-nano-esp32.jpeg)
-  - ![Electronique](images/electronic.jpeg)
+  ![Ecran Oled](images/ecran-oled.jpeg)
+  ![Arduino Nano ESP32-S3](images/arduino-nano-esp32.jpeg)
+  ![Electronique](images/electronic.jpeg)
   
 ## 📐 Principles
 
