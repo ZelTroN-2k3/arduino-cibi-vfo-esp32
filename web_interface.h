@@ -1,6 +1,8 @@
 #ifndef WEB_INTERFACE_H
 #define WEB_INTERFACE_H
 
+#include "vfo.h"
+
 const char* WEB_PAGE = R"=====(
 <!DOCTYPE html>
 <html lang="fr">
@@ -50,32 +52,76 @@ const char* WEB_PAGE = R"=====(
         }
 
         .conn-status {
+            display: inline-flex;
+            align-items: center;
             font-size: 0.6em;
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
             background: #161b22;
             color: #8b949e;
             transition: all 0.3s;
             border: 1px solid #30363d;
+            height: fit-content;
+            width: fit-content;
+            white-space: nowrap;
         }
         .conn-status.online { color: var(--led-green); border: 1px solid var(--led-green); }
         .conn-status.offline { color: var(--led-red); border: 1px solid var(--led-red); }
 
         .header {
-            margin-bottom: 20px;
-        }
-
-        .header-top {
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            gap: 15px;
         }
 
-        .header-bottom {
+        .header-left {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        /* PC Mode (Default Horizontal) */
+        /*
+        @media (min-width: 900px) {
+            body:not(.force-vertical) .radio-unit {
+                max-width: 1050px;
+                padding: 30px;
+            }
+
+            body:not(.force-vertical) .header {
+                border-bottom: 1px solid #30363d;
+                padding-bottom: 15px;
+            }
+
+            body:not(.force-vertical) .radio-body {
+                flex-direction: row;
+                align-items: flex-start;
+                gap: 30px;
+            }
+
+            body:not(.force-vertical) .panel-left { flex: 1.3; }
+            body:not(.force-vertical) .panel-center { flex: 1; justify-content: center; }
+            body:not(.force-vertical) .panel-right { flex: 1; }
+            
+            body:not(.force-vertical) .display-screen { min-height: 140px; }
+        }
+        */
+        
+        /* Force Vertical Logic for PC */
+        body.force-vertical .radio-unit {
+            max-width: 450px !important;
+            margin: 0 auto !important;
+        }
+        body.force-vertical .radio-body {
+            flex-direction: column !important;
         }
 
         .brand {
@@ -111,6 +157,90 @@ const char* WEB_PAGE = R"=====(
             margin-top: 15px;
             border: 1px solid #30363d;
             font-size: 0.8em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Modal Glassmorphism Style */
+        .config-panel.style-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -45%) scale(0.95);
+            width: 90%;
+            max-width: 400px;
+            z-index: 1000;
+            background: rgba(28, 33, 40, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            margin-top: 0;
+            opacity: 0;
+        }
+        .config-panel.style-modal.active {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Side Drawer Style */
+        .config-panel.style-drawer {
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 300px;
+            height: 100%;
+            background: var(--panel-color);
+            z-index: 1000;
+            margin-top: 0;
+            border-radius: 0;
+            border-left: 1px solid #30363d;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            padding: 30px 20px;
+            overflow-y: auto;
+        }
+        .config-panel.style-drawer.active {
+            right: 0;
+        }
+
+        .config-category-title {
+            grid-column: 1 / -1;
+            font-size: 1em;
+            color: var(--accent-color);
+            margin: 20px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #30363d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .config-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            backdrop-filter: blur(2px);
+        }
+        .config-overlay.active { display: block; }
+
+        .config-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+        }
+
+        .close-config {
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #8b949e;
         }
 
         .config-grid {
@@ -200,15 +330,127 @@ const char* WEB_PAGE = R"=====(
             box-shadow: 0 0 10px var(--led-red); 
         }
 
+        .pc-only { display: none !important; }
+
+        /* Base Layout (Mobile First) */
+        .radio-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-left, .panel-center, .panel-right {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Desktop Mode (Automatic Horizontal) */
+        @media (min-width: 900px) {
+            .pc-only { display: flex !important; }
+            
+            body:not(.force-vertical) .radio-unit {
+                max-width: 1050px;
+                padding: 30px;
+            }
+
+            body:not(.force-vertical) .header {
+                border-bottom: 1px solid #30363d;
+                padding-bottom: 15px;
+            }
+
+            body:not(.force-vertical) .radio-body {
+                flex-direction: row !important;
+                align-items: flex-start;
+                gap: 30px;
+            }
+
+            body:not(.force-vertical) .panel-left { flex: 1.3; }
+            body:not(.force-vertical) .panel-center { flex: 1; justify-content: center; }
+            body:not(.force-vertical) .panel-right { flex: 1; }
+            
+            body:not(.force-vertical) .display-screen { min-height: 140px; }
+        }
+
+        /* Forced Vertical Override for PC */
+        body.force-vertical .radio-unit {
+            max-width: 450px !important;
+            margin: 0 auto !important;
+        }
+        body.force-vertical .radio-body {
+            flex-direction: column !important;
+        }
+
         .display-screen {
             background: var(--lcd-bg);
             border-radius: 10px;
             padding: 20px;
-            margin-bottom: 25px;
             border: 4px solid #101418;
             box-shadow: inset 0 0 20px rgba(0,0,0,1);
             position: relative;
             overflow: hidden;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .cfg-header {
+            font-size: 0.85em;
+            color: var(--theme-color);
+            border-bottom: 1px solid var(--theme-color);
+            width: 100%;
+            text-align: center;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .cfg-title {
+            font-size: 1.1em;
+            color: var(--theme-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .cfg-value-container {
+            position: relative;
+            font-family: 'Seven Segment', sans-serif;
+            font-size: 2.2em;
+            color: var(--theme-color);
+            text-shadow: 0 0 10px var(--theme-glow);
+        }
+
+        .cfg-cursor {
+            position: absolute;
+            bottom: -5px;
+            height: 3px;
+            background: var(--theme-color);
+            box-shadow: 0 0 5px var(--theme-glow);
+            transition: left 0.1s, width 0.1s;
+        }
+
+        .cfg-about {
+            display: none;
+            font-size: 1.0em;
+            color: var(--theme-color);
+            line-height: 1.6;
+            text-align: left;
+            width: 100%;
+            padding-left: 10px;
+            font-family: monospace;
+            font-weight: bold;
         }
 
         .display-screen::after {
@@ -299,7 +541,6 @@ const char* WEB_PAGE = R"=====(
         .waterfall-container {
             background: #050a05;
             border-radius: 5px;
-            margin-bottom: 20px;
             border: 2px solid #101418;
             height: 50px;
             position: relative;
@@ -316,7 +557,6 @@ const char* WEB_PAGE = R"=====(
         .middle-controls-row {
             display: flex;
             gap: 15px;
-            margin-bottom: 25px;
             align-items: stretch;
         }
 
@@ -371,7 +611,6 @@ const char* WEB_PAGE = R"=====(
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 25px;
         }
 
         .knob-container {
@@ -600,14 +839,14 @@ const char* WEB_PAGE = R"=====(
 <body>
     <div class="radio-unit">
         <div class="header">
-            <div class="header-top">
+            <div class="header-left">
                 <div class="brand">
                     <span>President Grant Digital</span>
                     <span class="settings-btn" onclick="toggleConfig()">⚙️</span>
                 </div>
-            </div>
-            <div class="header-bottom">
                 <div id="conn-status" class="conn-status offline">OFFLINE</div>
+            </div>
+            <div class="header-right">
                 <div class="status-indicators">
                     <div id="led-rx" class="led active-rx"><div class="led-dot"></div>RX</div>
                     <div id="led-tx" class="led"><div class="led-dot"></div>TX</div>
@@ -615,9 +854,15 @@ const char* WEB_PAGE = R"=====(
             </div>
         </div>
 
-        <div id="config-panel" class="config-panel">
-            <div style="font-weight: bold; margin-bottom: 10px; color: var(--accent-color);">Advanced Settings</div>
+        <div id="config-overlay" class="config-overlay" onclick="toggleConfig()"></div>
+        <div id="config-panel" class="config-panel style-modal">
+            <div class="config-header-row">
+                <div style="font-weight: bold; color: var(--accent-color);">Advanced Settings</div>
+                <div class="close-config" onclick="toggleConfig()">×</div>
+            </div>
             <div class="config-grid">
+                <!-- Radio Calibration -->
+                <div class="config-category-title">Radio Calibration</div>
                 <div class="config-item">
                     <label>Min Freq (Hz)</label>
                     <input type="number" id="cfg-min" onchange="saveConfig('min', this.value)">
@@ -625,18 +870,6 @@ const char* WEB_PAGE = R"=====(
                 <div class="config-item">
                     <label>Max Freq (Hz)</label>
                     <input type="number" id="cfg-max" onchange="saveConfig('max', this.value)">
-                </div>
-                <div class="config-item">
-                    <label>FI AM (Hz)</label>
-                    <input type="number" id="cfg-fi-am" onchange="saveConfig('fi_am', this.value)">
-                </div>
-                <div class="config-item">
-                    <label>FI USB (Hz)</label>
-                    <input type="number" id="cfg-fi-usb" onchange="saveConfig('fi_usb', this.value)">
-                </div>
-                <div class="config-item">
-                    <label>FI LSB (Hz)</label>
-                    <input type="number" id="cfg-fi-lsb" onchange="saveConfig('fi_lsb', this.value)">
                 </div>
                 <div class="config-item">
                     <label>VFO Adj</label>
@@ -654,8 +887,26 @@ const char* WEB_PAGE = R"=====(
                     <label>Step Inc (Hz)</label>
                     <input type="number" id="cfg-step" onchange="saveConfig('step', this.value)">
                 </div>
+
+                <!-- Offsets FI -->
+                <div class="config-category-title">FI Offsets</div>
                 <div class="config-item">
-                    <label>Screen Style</label>
+                    <label>FI AM (Hz)</label>
+                    <input type="number" id="cfg-fi-am" onchange="saveConfig('fi_am', this.value)">
+                </div>
+                <div class="config-item">
+                    <label>FI USB (Hz)</label>
+                    <input type="number" id="cfg-fi-usb" onchange="saveConfig('fi_usb', this.value)">
+                </div>
+                <div class="config-item">
+                    <label>FI LSB (Hz)</label>
+                    <input type="number" id="cfg-fi-lsb" onchange="saveConfig('fi_lsb', this.value)">
+                </div>
+
+                <!-- UI Customization -->
+                <div class="config-category-title">Web Interface</div>
+                <div class="config-item">
+                    <label>Screen Theme</label>
                     <select id="cfg-theme" onchange="applyTheme(this.value); saveConfig('theme', this.value)">
                         <option value="0">Classic Green</option>
                         <option value="1">Vintage Amber</option>
@@ -665,18 +916,32 @@ const char* WEB_PAGE = R"=====(
                     </select>
                 </div>
                 <div class="config-item">
-                    <label>S-Meter Display</label>
+                    <label>Menu Style</label>
+                    <select id="cfg-uistyle" onchange="saveConfig('uistyle', this.value); updateUIStyle(this.value)">
+                        <option value="0">Modal Glass</option>
+                        <option value="1">Side Drawer</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>S-Meter</label>
                     <div class="toggle-group">
                         <button id="btn-sm-on" class="toggle-btn" onclick="setShowSMeter(1)">ON</button>
                         <button id="btn-sm-off" class="toggle-btn" onclick="setShowSMeter(0)">OFF</button>
                     </div>
                 </div>
                 <div class="config-item">
-                    <label>Waterfall Display</label>
+                    <label>Waterfall</label>
                     <div class="toggle-group">
                         <button id="btn-wf-on" class="toggle-btn" onclick="setShowWaterfall(1)">ON</button>
                         <button id="btn-wf-off" class="toggle-btn" onclick="setShowWaterfall(0)">OFF</button>
                     </div>
+                </div>
+                <div class="config-item pc-only">
+                    <label>Interface Style</label>
+                    <select id="cfg-orient" onchange="saveConfig('orient', this.value); updateOrientation(this.value)">
+                        <option value="0">Horizontal (PC)</option>
+                        <option value="1">Vertical (Forced)</option>
+                    </select>
                 </div>
             </div>
             <div class="config-actions">
@@ -684,100 +949,130 @@ const char* WEB_PAGE = R"=====(
             </div>
         </div>
 
-        <div class="display-screen">
-            <div class="top-row">
-                <div id="mode" class="mode-label">USB</div>
-                <div class="channel-info"><span id="band" style="font-size: 0.8em; margin-right: 10px; opacity: 0.7;">11m</span><span id="channel">CH 19</span></div>
-            </div>
-            <div class="frequency"><span id="freq">27.555.000</span><span class="mhz-unit">MHz</span></div>
-            
-            <div id="smeter-block" style="margin-top: 15px;">
-                <div id="smeter-text" style="font-size: 0.7em; color: var(--theme-color); font-family: monospace; text-align: right; margin-bottom: 2px; height: 1em;">S0</div>
-                <div class="smeter-label">
-                    <span>S</span>
-                    <span>1</span><span>.</span><span>3</span><span>.</span><span>5</span><span>.</span><span>7</span><span>.</span><span>9</span><span>.</span><span>+10</span><span>.</span><span>.</span><span>+30</span>
-                </div>
-                <div id="smeter-scale" class="smeter-scale"></div>
-            </div>
-        </div>
-
-        <div class="modes-section" style="margin-bottom: 20px;">
-            <div class="memory-grid">
-                <button class="mode" id="mode0" onclick="changeMode(0)">CW</button>
-                <button class="mode" id="mode1" onclick="changeMode(1)">AM</button>
-                <button class="mode" id="mode2" onclick="changeMode(2)">FM</button>
-                <button class="mode" id="mode3" onclick="changeMode(3)">USB</button>
-                <button class="mode" id="mode4" onclick="changeMode(4)">LSB</button>
-            </div>
-        </div>
-
-        <div class="waterfall-container">
-            <canvas id="waterfall-canvas"></canvas>
-        </div>
-
-        <div class="middle-controls-row">
-            <div class="chan-lcd">
-                <div class="chan-lcd-label">Channel</div>
-                <div id="big-chan-num">19</div>
-            </div>
-            <div class="step-grid">
-                <button class="plus" onclick="changeFreq(10000)">+10k</button>
-                <button class="plus" onclick="changeFreq(1000)">+1k</button>
-                <button class="plus" onclick="changeFreq(100)">+100</button>
-                <button class="minus" onclick="changeFreq(-10000)">-10k</button>
-                <button class="minus" onclick="changeFreq(-1000)">-1k</button>
-                <button class="minus" onclick="changeFreq(-100)">-100</button>
-            </div>
-        </div>
-
-        <div class="knobs-wrapper">
-            <div class="knob-container">
-                <div class="knob-housing">
-                    <div id="knob-surround-tuning" class="knob-surround"></div>
-                    <div id="knob" class="knob-outer">
-                        <div id="knob-inner" class="knob-inner">
-                            <div class="knob-indicator"></div>
+        <div class="radio-body">
+            <!-- LEFT COLUMN: Main Display -->
+            <div class="panel-left">
+                <div class="display-screen">
+                    <div id="vfo-display">
+                        <div class="top-row">
+                            <div id="mode" class="mode-label">USB</div>
+                            <div class="channel-info"><span id="band" style="font-size: 0.8em; margin-right: 10px; opacity: 0.7;">11m</span><span id="channel">CH 19</span></div>
+                        </div>
+                        <div class="frequency"><span id="freq">27.555.000</span><span class="mhz-unit">MHz</span></div>
+                        
+                        <div id="smeter-block" style="margin-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <div id="smeter-bar-container" style="flex-grow: 1; height: 6px; background: #161b22; margin-right: 12px; border-radius: 3px; overflow: hidden; position: relative; border: 1px solid #30363d;">
+                                    <div id="smeter-bar-fill" style="width: 0%; height: 100%; background: var(--theme-color); box-shadow: 0 0 8px var(--theme-glow); transition: width 0.1s;"></div>
+                                </div>
+                                <div id="smeter-text" style="font-size: 0.7em; color: var(--theme-color); font-family: monospace; text-align: right; height: 1em; min-width: 65px;">S0</div>
+                            </div>
+                            <div class="smeter-label">
+                                <span>S</span>
+                                <span>1</span><span>.</span><span>3</span><span>.</span><span>5</span><span>.</span><span>7</span><span>.</span><span>9</span><span>.</span><span>+10</span><span>.</span><span>.</span><span>+30</span>
+                            </div>
+                            <div id="smeter-scale" class="smeter-scale"></div>
+                        </div>
+                    </div>
+                    <div id="config-screen" class="config-screen">
+                        <div id="cfg-header" class="cfg-header">CONFIG 1/12 :</div>
+                        <div id="cfg-title" class="cfg-title">TITLE</div>
+                        <div id="cfg-value-container" class="cfg-value-container">
+                            <span id="cfg-value">00000000</span>
+                            <div id="cfg-cursor" class="cfg-cursor"></div>
+                        </div>
+                        <div id="cfg-about" class="cfg-about">
+                            <div>Author: )=====" AUTHOR R"=====(</div>
+                            <div>Firmware: )=====" VERSION R"=====(</div>
+                            <div>Remote: )=====" WEB_VERSION R"=====(</div>
                         </div>
                     </div>
                 </div>
-                <div class="knob-label">Tuning</div>
+                <div class="waterfall-container">
+                    <canvas id="waterfall-canvas"></canvas>
+                </div>
             </div>
-            <div class="knob-container">
-                <div class="knob-housing">
-                    <div id="knob-surround-channels" class="knob-surround"></div>
-                    <div id="knob-chan" class="knob-outer channel-knob">
-                        <div id="chan-knob-inner" class="knob-inner">
-                            <div class="knob-indicator"></div>
-                        </div>
+
+            <!-- CENTER COLUMN: Tuning & Channels -->
+            <div class="panel-center">
+                <div class="middle-controls-row">
+                    <div class="chan-lcd">
+                        <div class="chan-lcd-label">Channel</div>
+                        <div id="big-chan-num">19</div>
+                    </div>
+                    <div class="step-grid">
+                        <button class="plus" onclick="changeFreq(10000)">+10k</button>
+                        <button class="plus" onclick="changeFreq(1000)">+1k</button>
+                        <button class="plus" onclick="changeFreq(100)">+100</button>
+                        <button class="minus" onclick="changeFreq(-10000)">-10k</button>
+                        <button class="minus" onclick="changeFreq(-1000)">-1k</button>
+                        <button class="minus" onclick="changeFreq(-100)">-100</button>
                     </div>
                 </div>
-                <div class="knob-label">Channels</div>
-            </div>
-        </div>
 
-        <div class="memory-section">
-            <div class="memory-title">Memories (Press and hold to save)</div>
-            <div class="memory-grid">
-                <button class="mem" id="mem0" onmousedown="startMem(0)" onmouseup="endMem(0)" ontouchstart="startMem(0)" ontouchend="endMem(0)">
-                    <div class="mem-header"><span>M1</span><span class="mem-chan" id="mc0">--</span></div>
-                    <div class="mem-freq" id="mf0">--</div>
-                </button>
-                <button class="mem" id="mem1" onmousedown="startMem(1)" onmouseup="endMem(1)" ontouchstart="startMem(1)" ontouchend="endMem(1)">
-                    <div class="mem-header"><span>M2</span><span class="mem-chan" id="mc1">--</span></div>
-                    <div class="mem-freq" id="mf1">--</div>
-                </button>
-                <button class="mem" id="mem2" onmousedown="startMem(2)" onmouseup="endMem(2)" ontouchstart="startMem(2)" ontouchend="endMem(2)">
-                    <div class="mem-header"><span>M3</span><span class="mem-chan" id="mc2">--</span></div>
-                    <div class="mem-freq" id="mf2">--</div>
-                </button>
-                <button class="mem" id="mem3" onmousedown="startMem(3)" onmouseup="endMem(3)" ontouchstart="startMem(3)" ontouchend="endMem(3)">
-                    <div class="mem-header"><span>M4</span><span class="mem-chan" id="mc3">--</span></div>
-                    <div class="mem-freq" id="mf3">--</div>
-                </button>
-                <button class="mem" id="mem4" onmousedown="startMem(4)" onmouseup="endMem(4)" ontouchstart="startMem(4)" ontouchend="endMem(4)">
-                    <div class="mem-header"><span>M5</span><span class="mem-chan" id="mc4">--</span></div>
-                    <div class="mem-freq" id="mf4">--</div>
-                </button>
+                <div class="knobs-wrapper">
+                    <div class="knob-container">
+                        <div class="knob-housing">
+                            <div id="knob-surround-tuning" class="knob-surround"></div>
+                            <div id="knob" class="knob-outer">
+                                <div id="knob-inner" class="knob-inner">
+                                    <div class="knob-indicator"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="knob-label">Tuning</div>
+                    </div>
+                    <div class="knob-container">
+                        <div class="knob-housing">
+                            <div id="knob-surround-channels" class="knob-surround"></div>
+                            <div id="knob-chan" class="knob-outer channel-knob">
+                                <div id="chan-knob-inner" class="knob-inner">
+                                    <div class="knob-indicator"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="knob-label">Channels</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Modes & Memories -->
+            <div class="panel-right">
+                <div class="modes-section">
+                    <div class="memory-grid">
+                        <button class="mode" id="mode0" onclick="changeMode(0)">CW</button>
+                        <button class="mode" id="mode1" onclick="changeMode(1)">AM</button>
+                        <button class="mode" id="mode2" onclick="changeMode(2)">FM</button>
+                        <button class="mode" id="mode3" onclick="changeMode(3)">USB</button>
+                        <button class="mode" id="mode4" onclick="changeMode(4)">LSB</button>
+                    </div>
+                </div>
+
+                <div class="memory-section">
+                    <div class="memory-title">Memories</div>
+                    <div class="memory-grid">
+                        <button class="mem" id="mem0" onmousedown="startMem(0)" onmouseup="endMem(0)" ontouchstart="startMem(0)" ontouchend="endMem(0)">
+                            <div class="mem-header"><span>M1</span><span class="mem-chan" id="mc0">--</span></div>
+                            <div class="mem-freq" id="mf0">--</div>
+                        </button>
+                        <button class="mem" id="mem1" onmousedown="startMem(1)" onmouseup="endMem(1)" ontouchstart="startMem(1)" ontouchend="endMem(1)">
+                            <div class="mem-header"><span>M2</span><span class="mem-chan" id="mc1">--</span></div>
+                            <div class="mem-freq" id="mf1">--</div>
+                        </button>
+                        <button class="mem" id="mem2" onmousedown="startMem(2)" onmouseup="endMem(2)" ontouchstart="startMem(2)" ontouchend="endMem(2)">
+                            <div class="mem-header"><span>M3</span><span class="mem-chan" id="mc2">--</span></div>
+                            <div class="mem-freq" id="mf2">--</div>
+                        </button>
+                        <button class="mem" id="mem3" onmousedown="startMem(3)" onmouseup="endMem(3)" ontouchstart="startMem(3)" ontouchend="endMem(3)">
+                            <div class="mem-header"><span>M4</span><span class="mem-chan" id="mc3">--</span></div>
+                            <div class="mem-freq" id="mf3">--</div>
+                        </button>
+                        <button class="mem" id="mem4" onmousedown="startMem(4)" onmouseup="endMem(4)" ontouchstart="startMem(4)" ontouchend="endMem(4)">
+                            <div class="mem-header"><span>M5</span><span class="mem-chan" id="mc4">--</span></div>
+                            <div class="mem-freq" id="mf4">--</div>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -911,7 +1206,34 @@ const char* WEB_PAGE = R"=====(
 
         function toggleConfig() {
             const panel = document.getElementById('config-panel');
-            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+            const overlay = document.getElementById('config-overlay');
+            const isActive = panel.classList.contains('active');
+            
+            if (isActive) {
+                panel.classList.remove('active');
+                overlay.classList.remove('active');
+            } else {
+                panel.classList.add('active');
+                overlay.classList.add('active');
+            }
+        }
+
+        function updateUIStyle(style) {
+            const panel = document.getElementById('config-panel');
+            panel.classList.remove('style-modal', 'style-drawer');
+            if (style == 1) {
+                panel.classList.add('style-drawer');
+            } else {
+                panel.classList.add('style-modal');
+            }
+        }
+
+        function updateOrientation(orient) {
+            if (orient == 1) {
+                document.body.classList.add('force-vertical');
+            } else {
+                document.body.classList.remove('force-vertical');
+            }
         }
 
         function saveConfig(param, value) {
@@ -962,6 +1284,54 @@ const char* WEB_PAGE = R"=====(
                     isWaiting = false;
                     updateConnStatus(true);
                     
+                    if (!configLoaded && data.conf) {
+                        updateUIStyle(data.conf.uistyle);
+                        document.getElementById('cfg-uistyle').value = data.conf.uistyle;
+                    }
+
+                    const vfoDisplay = document.getElementById('vfo-display');
+                    const configScreen = document.getElementById('config-screen');
+
+                    if (data.isConfig) {
+                        vfoDisplay.style.display = 'none';
+                        configScreen.style.display = 'flex';
+                        
+                        document.getElementById('cfg-header').innerText = `CONFIG ${data.menuIdx + 1}/${data.menuCount} :`;
+                        document.getElementById('cfg-title').innerText = data.menuTitle;
+                        
+                        const valEl = document.getElementById('cfg-value');
+                        const aboutEl = document.getElementById('cfg-about');
+                        const cursorEl = document.getElementById('cfg-cursor');
+                        const valContainer = document.getElementById('cfg-value-container');
+
+                        if (data.menuTitle.includes("ABOUT")) {
+                            valContainer.style.display = 'none';
+                            aboutEl.style.display = 'block';
+                        } else {
+                            valContainer.style.display = 'block';
+                            aboutEl.style.display = 'none';
+                            
+                            let valStr = data.menuValue;
+                            if (!isNaN(valStr) && valStr.length < 8 && !valStr.startsWith('-')) {
+                                valStr = valStr.padStart(8, '0');
+                            }
+                            valEl.innerText = valStr;
+
+                            if (data.cursorPos > 0) {
+                                cursorEl.style.display = 'block';
+                                const rightOffset = 10;
+                                cursorEl.style.width = '20px';
+                                cursorEl.style.right = (rightOffset + (data.cursorPos - 1) * 23.5) + 'px';
+                            } else {
+                                cursorEl.style.display = 'none';
+                            }
+                        }
+                        return;
+                    } else {
+                        vfoDisplay.style.display = 'block';
+                        configScreen.style.display = 'none';
+                    }
+
                     // Sync knobs if changed externally or on first load
                     if (Math.abs(currentFreq - data.freq) > 50) {
                         syncKnobs(data.freq, data.channel);
@@ -970,7 +1340,10 @@ const char* WEB_PAGE = R"=====(
                     currentFreq = data.freq;
                     memories = data.memories;
                     document.getElementById('freq').innerText = formatFreq(data.freq);
-                    document.getElementById('mode').innerText = data.mode;
+                    
+                    const modes = ["CW", "AM", "FM", "USB", "LSB"];
+                    document.getElementById('mode').innerText = modes[data.modeIdx] || "---";
+                    
                     const chanDiv = document.getElementById('channel');
                     const bigChanDiv = document.getElementById('big-chan-num');
                     const bandSpan = document.getElementById('band');
@@ -984,19 +1357,33 @@ const char* WEB_PAGE = R"=====(
                         bigChanDiv.innerText = "--";
                         chanDiv.style.opacity = "0.5";
                     }
-                    bandSpan.innerText = data.band;
+                    
+                    // Local band calculation to save ESP32 CPU
+                    let bName = "OUT";
+                    if (data.freq >= 26965000 && data.freq <= 27405000) bName = "MID";
+                    else if (data.freq < 26965000) bName = "LOW";
+                    else bName = "HIGH";
+                    bandSpan.innerText = bName;
+
                     if (!configLoaded && data.conf) {
+                        applyTheme(data.conf.theme);
+                        updateUIStyle(data.conf.uistyle);
+                        document.getElementById('cfg-uistyle').value = data.conf.uistyle;
+                        
+                        updateOrientation(data.conf.orient);
+                        document.getElementById('cfg-orient').value = data.conf.orient;
+                        
+                        // Populate Advanced Settings Fields
                         document.getElementById('cfg-min').value = data.conf.min;
                         document.getElementById('cfg-max').value = data.conf.max;
-                        document.getElementById('cfg-fi-am').value = data.conf.fi_am;
-                        document.getElementById('cfg-fi-usb').value = data.conf.fi_usb;
-                        document.getElementById('cfg-fi-lsb').value = data.conf.fi_lsb;
                         document.getElementById('cfg-vfo').value = data.conf.vfo_adj;
                         document.getElementById('cfg-sm').value = data.conf.sm_adj;
                         document.getElementById('cfg-cl').value = data.conf.cl_center;
                         document.getElementById('cfg-step').value = data.conf.step;
-                        applyTheme(data.conf.theme);
-                        
+                        document.getElementById('cfg-fi-am').value = data.conf.fi_am;
+                        document.getElementById('cfg-fi-usb').value = data.conf.fi_usb;
+                        document.getElementById('cfg-fi-lsb').value = data.conf.fi_lsb;
+
                         document.getElementById('btn-sm-on').classList.toggle('active', data.conf.show_sm == 1);
                         document.getElementById('btn-sm-off').classList.toggle('active', data.conf.show_sm == 0);
                         toggleSMeter(data.conf.show_sm == 1);
@@ -1119,6 +1506,20 @@ const char* WEB_PAGE = R"=====(
                 seg.className = 'smeter-segment';
                 if(i < level) seg.classList.add(i < 14 ? 'on-theme' : 'on-red');
             });
+            
+            // Update Mini Bar
+            const barFill = document.getElementById('smeter-bar-fill');
+            if (barFill) {
+                const percent = (val / 1024) * 100;
+                barFill.style.width = percent + '%';
+                if (percent > 70) {
+                    barFill.style.background = 'var(--led-red)';
+                    barFill.style.boxShadow = '0 0 8px var(--led-red)';
+                } else {
+                    barFill.style.background = 'var(--theme-color)';
+                    barFill.style.boxShadow = '0 0 8px var(--theme-glow)';
+                }
+            }
             
             const smText = document.getElementById('smeter-text');
             if (level <= 1) smText.innerText = "S0";

@@ -50,10 +50,11 @@
 #endif
 
 /* Constants: */
+/*
 #define VERSION     "2.2.0"
 #define AUTHOR      "Patrick.A"
-#define WEB_VERSION "VFO v2.9"
-
+#define WEB_VERSION "VFO v2.9.4"
+*/
 #include "web_interface.h"
 #include "logo.h"
 
@@ -71,62 +72,70 @@ void handleRoot() {
 }
 
 void handleStatus() {
-  String json;
-  json.reserve(1024); // Optimization: avoid multiple reallocations
+  static char titleBuf[32];
+  static char valueBuf[32];
+  String out;
+  out.reserve(700);
   
-  json = F("{\"freq\":");
-  json += cibi.getCurrentFreq();
-  json += F(",\"mode\":\"");
+  out = F("{\"freq\":");
+  out += String(cibi.getCurrentFreq());
+  out += F(",\"modeIdx\":");
+  out += String(cibi.getModulation());
+  out += F(",\"channel\":");
+  out += String(cibi.getChannel());
+  out += F(",\"bis\":");
+  out += (cibi.isBis() ? F("true") : F("false"));
+  out += F(",\"tx\":");
+  out += (cibi.isTx() ? F("true") : F("false"));
+  out += F(",\"smeter\":");
+  out += String(cibi.getSMeter());
   
-  const char* modeStr = "UNKNOWN";
-  switch(cibi.getModulation()) {
-    case Input::MOD_AM: modeStr = "AM"; break;
-    case Input::MOD_FM: modeStr = "FM"; break;
-    case Input::MOD_USB: modeStr = "USB"; break;
-    case Input::MOD_LSB: modeStr = "LSB"; break;
-    case Input::MOD_CW: modeStr = "CW"; break;
+  out += F(",\"conf\":{");
+  out += F("\"min\":"); out += String(config.getCibiMinFreq());
+  out += F(",\"max\":"); out += String(config.getCibiMaxFreq());
+  out += F(",\"step\":"); out += String(config.getFreqStepIncrement());
+  out += F(",\"fi_am\":"); out += String(config.getFiAm());
+  out += F(",\"fi_usb\":"); out += String(config.getFiUsb());
+  out += F(",\"fi_lsb\":"); out += String(config.getFiLsb());
+  out += F(",\"vfo_adj\":"); out += String(config.getVFOAdj());
+  out += F(",\"sm_adj\":"); out += String(config.getSMeterAdj());
+  out += F(",\"cl_center\":"); out += String(config.getClarifierCenter());
+  out += F(",\"theme\":"); out += String(config.getTheme());
+  out += F(",\"show_sm\":"); out += String(config.getShowSMeter());
+  out += F(",\"show_wf\":"); out += String(config.getShowWaterfall());
+  out += F(",\"layout\":"); out += String(config.getLayoutMode());
+  out += F(",\"uistyle\":"); out += String(config.getMenuUIStyle());
+  out += F(",\"orient\":"); out += String(config.getLayoutOrientation());
+  out += F("},\"isConfig\":");
+
+  bool isCfg = (input.getApplicationMode() == Input::CONFIG_MODE);
+  out += (isCfg ? F("true") : F("false"));
+  
+  if (isCfg) {
+    memset(titleBuf, 0, 32);
+    memset(valueBuf, 0, 32);
+    config.getCurrentMenuTitle(titleBuf, 32);
+    config.getCurrentValueFormatted(valueBuf, 32);
+    out += F(",\"menuTitle\":\"");
+    out += titleBuf;
+    out += F("\",\"menuValue\":\"");
+    out += valueBuf;
+    out += F("\",\"menuIdx\":");
+    out += String(config.getCurrentMenuIndex());
+    out += F(",\"menuCount\":");
+    out += String(config.getMenuCount());
+    out += F(",\"cursorPos\":");
+    out += String(config.getCurrentCursorPos());
   }
-  
-  json += modeStr;
-  json += F("\",\"modeIdx\":");
-  json += cibi.getModulation();
-  
-  json += F(",\"channel\":");
-  json += cibi.getChannel();
-  json += F(",\"bis\":");
-  json += (cibi.isBis() ? F("true") : F("false"));
 
-  json += F(",\"band\":\"");
-  json += getBandName(cibi.getCurrentFreq());
-  json += F("\",\"tx\":");
-  json += (cibi.isTx() ? F("true") : F("false"));
-  json += F(",\"smeter\":");
-  json += cibi.getSMeter();
-  
-  json += F(",\"conf\":{");
-  json += F("\"min\":"); json += config.getCibiMinFreq();
-  json += F(",\"max\":"); json += config.getCibiMaxFreq();
-  json += F(",\"step\":"); json += config.getFreqStepIncrement();
-  json += F(",\"fi_am\":"); json += config.getFiAm();
-  json += F(",\"fi_usb\":"); json += config.getFiUsb();
-  json += F(",\"fi_lsb\":"); json += config.getFiLsb();
-  json += F(",\"vfo_adj\":"); json += config.getVFOAdj();
-  json += F(",\"sm_adj\":"); json += config.getSMeterAdj();
-  json += F(",\"cl_center\":"); json += config.getClarifierCenter();
-  json += F(",\"theme\":"); json += config.getTheme();
-  json += F(",\"show_sm\":"); json += config.getShowSMeter();
-  json += F(",\"show_wf\":"); json += config.getShowWaterfall();
-  json += F(",\"layout\":"); json += config.getLayoutMode();
-  json += F("},");
-
-  json += F("\"memories\":[");
+  out += F(",\"memories\":[");
   for(int i=0; i<5; i++) {
-    json += config.getMemory(i);
-    if (i < 4) json += ',';
+    out += String(config.getMemory(i));
+    if (i < 4) out += F(",");
   }
-  json += F("]}");
+  out += F("]}");
   
-  server.send(200, "application/json", json);
+  server.send(200, "application/json", out);
 }
 
 void handleSet() {
@@ -168,6 +177,8 @@ void handleUpdateConfig() {
   if (server.hasArg("show_sm")) config.setShowSMeter(server.arg("show_sm").toInt());
   if (server.hasArg("show_wf")) config.setShowWaterfall(server.arg("show_wf").toInt());
   if (server.hasArg("layout")) config.setLayoutMode(server.arg("layout").toInt());
+  if (server.hasArg("uistyle")) config.setMenuUIStyle(server.arg("uistyle").toInt());
+  if (server.hasArg("orient")) config.setLayoutOrientation(server.arg("orient").toInt());
   server.send(200, "text/plain", "OK");
 }
 
@@ -251,6 +262,7 @@ void setup()
   display.sendBuffer();
   delay(2000);
 
+/*
   // Display Author and Version info
   display.clear();
   display.setFont(u8g2_font_6x10_tr);
@@ -260,6 +272,7 @@ void setup()
   display.drawStr(10, 58, "System Starting...");
   display.sendBuffer();
   delay(4000);
+*/
 
   server.on("/", handleRoot);
   server.on("/status", handleStatus);

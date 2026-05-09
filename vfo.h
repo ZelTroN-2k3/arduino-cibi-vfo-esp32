@@ -36,6 +36,11 @@
 //#define DEBUG
 #define WATCHDOG
 #define TRANSVERTER
+
+#define VERSION     "2.2.0"
+#define AUTHOR      "Patrick.A"
+#define WEB_VERSION "VFO v2.9.4"
+
 /* Display s-meter or simply SMETER_REPLACEMENT_TEXT if not defined */
 #define SMETER_DISPLAY
 #ifndef SMETER_DISPLAY

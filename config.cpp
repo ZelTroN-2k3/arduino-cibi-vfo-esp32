@@ -62,6 +62,7 @@ context_({
   .fi_lsb = DEFAULT_FI_FREQ_LSB,
   .vfo_adj = DEFAULT_VFO_ADJ,
   .clarifier_adj = DEFAULT_CLARIFIER_ADJ,
+  .clarifier_center = 2048,
   .smeter_adj = DEFAULT_SMETER_ADJ
 }),
 input_(_input),
@@ -86,9 +87,13 @@ void Config::loop(bool _update_display)
   if(input_.buttonClicked())
   {
     update = true;
-    current_cursor_pos_++;
-    if(current_cursor_pos_ >= CURSOR_POS_MAX)
-    {
+    if (current_menu_index_ != CONFIG_ABOUT) {
+      current_cursor_pos_++;
+      if(current_cursor_pos_ >= CURSOR_POS_MAX)
+      {
+        current_cursor_pos_ = CURSOR_POS_NONE;
+      }
+    } else {
       current_cursor_pos_ = CURSOR_POS_NONE;
     }
   }
@@ -110,48 +115,52 @@ void Config::loop(bool _update_display)
       {
         current_menu_index_ = CONFIG_OLED_MAX - 1;
       }
-
-      /* change displayed item value */
-      switch (current_menu_index_)
-      {
-        case CONFIG_CIBI_FREQ:
-          current_value_ = &context_.cibi_frequency;
-          break;
-        case CONFIG_CIBI_MIN_FREQ:
-          current_value_ = &context_.cibi_min_freq;
-          break;
-        case CONFIG_CIBI_MAX_FREQ:
-          current_value_ = &context_.cibi_max_freq;
-          break;
-        case CONFIG_FREQ_STEP:
-          current_value_ = &context_.freq_step_inc;
-          break;
-        case CONFIG_FI_AM:
-          current_value_ = &context_.fi_am;          /* FI AM/FM/CW */
-          break;
-        case CONFIG_FI_USB:
-          current_value_ = &context_.fi_usb;         /* FI USB */
-          break;
-        case CONFIG_FI_LSB:
-          current_value_ = &context_.fi_lsb;         /* FI LSB */
-          break;
-        case CONFIG_VFO_ADJ:     
-          current_value_ = (uint32_t*)&context_.vfo_adj;
-          break;
-        case CONFIG_CLARIFIER_ADJ:     
-          current_value_ = (uint32_t*)&context_.clarifier_adj;
-          break;
-        case CONFIG_CLARIFIER_CENTER:     
-          current_value_ = &context_.clarifier_center;
-          break;
-        case CONFIG_SMETER_ADJ:
-          current_value_ = (uint32_t*)&context_.smeter_adj;
-          break;
-        default:
-          return;
-      }
     }
-    else
+
+    /* always update current_value_ based on current_menu_index_ */
+    switch (current_menu_index_)
+    {
+      case CONFIG_CIBI_FREQ:
+        current_value_ = &context_.cibi_frequency;
+        break;
+      case CONFIG_CIBI_MIN_FREQ:
+        current_value_ = &context_.cibi_min_freq;
+        break;
+      case CONFIG_CIBI_MAX_FREQ:
+        current_value_ = &context_.cibi_max_freq;
+        break;
+      case CONFIG_FREQ_STEP:
+        current_value_ = &context_.freq_step_inc;
+        break;
+      case CONFIG_FI_AM:
+        current_value_ = &context_.fi_am;          /* FI AM/FM/CW */
+        break;
+      case CONFIG_FI_USB:
+        current_value_ = &context_.fi_usb;         /* FI USB */
+        break;
+      case CONFIG_FI_LSB:
+        current_value_ = &context_.fi_lsb;         /* FI LSB */
+        break;
+      case CONFIG_VFO_ADJ:     
+        current_value_ = (uint32_t*)&context_.vfo_adj;
+        break;
+      case CONFIG_CLARIFIER_ADJ:     
+        current_value_ = (uint32_t*)&context_.clarifier_adj;
+        break;
+      case CONFIG_CLARIFIER_CENTER:     
+        current_value_ = &context_.clarifier_center;
+        break;
+      case CONFIG_SMETER_ADJ:
+        current_value_ = (uint32_t*)&context_.smeter_adj;
+        break;
+      case CONFIG_ABOUT:
+        current_value_ = nullptr;
+        break;
+      default:
+        return;
+    }
+
+    if(CURSOR_POS_NONE != current_cursor_pos_ && current_value_ != nullptr)
     {
       if((current_menu_index_ != CONFIG_VFO_ADJ) && 
          (current_menu_index_ != CONFIG_CLARIFIER_ADJ) && 
@@ -183,7 +192,11 @@ void Config::loop(bool _update_display)
       view_->setTitle(current_menu_index_, WHITE);
     }
     
-    if (current_menu_index_ != CONFIG_VFO_ADJ &&
+    if (current_menu_index_ == CONFIG_ABOUT)
+    {
+      view_->setAbout(WHITE);
+    }
+    else if (current_menu_index_ != CONFIG_VFO_ADJ &&
         current_menu_index_ != CONFIG_CLARIFIER_ADJ &&
         current_menu_index_ != CONFIG_SMETER_ADJ)
     {
@@ -194,13 +207,15 @@ void Config::loop(bool _update_display)
       view_->setValueInt((*(int32_t*)current_value_), WHITE);
     }
 
-    if(current_menu_index_ == CONFIG_VFO_ADJ)
+    if(current_menu_index_ == CONFIG_VFO_ADJ && current_value_ != nullptr)
     {
       /* set si5351 correction here */
       dds_.setOutputCorrection((*(int32_t*)current_value_));
     }
     
-    view_->setCursorPos(current_cursor_pos_, WHITE);
+    if (current_menu_index_ != CONFIG_ABOUT) {
+      view_->setCursorPos(current_cursor_pos_, WHITE);
+    }
     view_->display();
   }
 }
@@ -227,6 +242,8 @@ int Config::open()
     context_.show_smeter = 1; // Default Show
     context_.show_waterfall = 1; // Default Show
     context_.layout_mode = 0; // Default Option 1
+    context_.menu_ui_style = 0; // Default Modal
+    context_.layout_orientation = 0; // Default Horizontal (Auto)
     for(int i=0; i<5; i++) context_.memories[i] = DEFAULT_CIBI_FREQ;
   }
   return 0;
@@ -370,4 +387,29 @@ void Config::setClarifierCenter(uint32_t _center) {
 void Config::setSMeterAdj(int32_t _adj) {
   context_.smeter_adj = _adj;
   save();
+}
+
+void Config::getCurrentValueFormatted(char* buffer, int len) const {
+  if (buffer == nullptr || len <= 0) return;
+  buffer[0] = '\0';
+
+  if (current_menu_index_ == CONFIG_ABOUT) {
+    strncpy(buffer, "ABOUT", len);
+    buffer[len-1] = '\0';
+    return;
+  }
+  
+  if (current_value_ == nullptr) {
+    strncpy(buffer, "---", len);
+    buffer[len-1] = '\0';
+    return;
+  }
+  
+  if (current_menu_index_ == CONFIG_VFO_ADJ || 
+      current_menu_index_ == CONFIG_CLARIFIER_ADJ || 
+      current_menu_index_ == CONFIG_SMETER_ADJ) {
+    snprintf(buffer, len, "%ld", *(int32_t*)current_value_);
+  } else {
+    snprintf(buffer, len, "%lu", *current_value_);
+  }
 }

@@ -12,9 +12,17 @@ This project is an adaptation for the **Arduino Nano ESP32** of the original dig
   - **Full Mode Selection**: Change radio modes (CW, AM, FM, USB, LSB) directly from the web interface.
   - **Intelligent Override**: Digital commands are respected unless the physical radio switch is moved, which then regains priority.
   - **Real-time Status**: Live monitoring of RX/TX state and connection health (Online/Offline) via a modernized web header.
+  - **Config Menu Mirroring**: Real-time visual synchronization of the physical configuration menu on the web interface.
+  - **Responsive Dual-Layout**: 
+    - **PC Mode**: professional 3-column horizontal dashboard for large screens.
+    - **Mobile Mode**: Optimized vertical stack for smartphones.
+    - **Configurable Orientation**: Toggle between Horizontal and Forced Vertical views via settings.
+  - **Multi-Style Advanced Menu**: Choose between **Modal Glass** (floating premium look) and **Side Drawer** (sliding dashboard) for settings.
   - **Throttled Tuning**: High-speed virtual knob support with 50ms request throttling to prevent server saturation.
 - **WiFiManager Integration**: No more hardcoded credentials. Easy WiFi setup via a captive portal (`CIBI-VFO-ESP32-AP`).
 - **ESP32 Optimized**: 
+  - **Instant Boot**: Removed startup delays by moving system info to the internal menu.
+  - **Ultra-Stable API**: Refactored JSON engine with static buffers and pre-reservation to eliminate connection resets.
   - **Single-Cycle Refresh**: Zoned OLED update logic (top/middle/bottom) reducing I2C traffic by up to 75% for S-meter updates.
   - **Signal Filtering**: Exponential Moving Average (EMA) filtering on S-meter and Clarifier for smooth, jitter-free "analog" feel.
   - **12-bit Precision**: Native ESP32 ADC resolution (0-4095) for high-sensitivity signal and tuning measurement.
@@ -26,14 +34,18 @@ This project is an adaptation for the **Arduino Nano ESP32** of the original dig
 - **Non-Volatile Memory**: Automatic saving of the last frequency and settings in the (emulated) EEPROM.
 - **Configuration Menu**: Adjust IF offsets, band limits, calibrate the Si5351, and set Clarifier ADC center directly using the encoder.
 
-## 🌐 Advanced Web Interface (v2.9)
+## 🌐 Advanced Web Interface (v2.9.4)
 
 The project includes a powerful, responsive web interface for remote control and advanced configuration:
 - **Web Interface**:
-  - ![Web Interface](images/Web-Interface.2.9.png)
+  - ![Web Interface Horizontal](images/Interface-Web-2.9.4-Affichage-Horizontale.png)
+  - ![Web Interface Vertical](images/Interface-Web-2.9.4-Affichage-Verticale.png)
+  - ![Web Interface Advenced Settings](images/Interface-Web-2.9.4-Advenced-Settings.png)
 - **Mobile Web Interface**:
-  - ![Mobile Web Interface](images/Mobile-Web-Interface.2.9.jpeg)
+  - ![Mobile Web Interface](images/Mobile-Web-Interface.2.9.4.jpeg)
+  - ![Mobile Web Interface Advenced Settings](images/Mobile-Web-Interface.Advenced.Settings2.9.4.jpeg)
 - **Professional Display**: Realistic **'Seven Segment'** digital font for high-precision frequency and channel indicators.
+- **Dual S-Meter Display**: Simultaneous textual (S-points/dB) and high-resolution visual progress bar for signal monitoring.
 - **Dedicated Channel LCD**: Large integrated LCD-style display specifically for CB channel visualization (with Alpha/Bis support).
 - **Advanced Memory Buttons**: 
     - Real-time display of stored Label, Channel, and Formatted Frequency.
@@ -67,6 +79,7 @@ The project includes a powerful, responsive web interface for remote control and
   - ![Ecran Oled](images/ecran-oled.jpeg)
   - ![Arduino Nano ESP32-S3](images/arduino-nano-esp32.jpeg)
   - ![Electronique](images/electronic.jpeg)
+  
 ## 📐 Principles
 
 ### Basic Principles
@@ -120,8 +133,8 @@ Referring to `vfo.h` and `input.cpp`:
 - **D3** = Rotary encoder A
 - **D2** = Rotary encoder B
 - **A1** = Step/increment mode (active low) - masse
-- **A2** = Clarifier input (analog)
-- **A3** = S-meter input (analog)
+- **A2** = Clarifier input (analog) - masse
+- **A3** = S-meter input (analog) - masse
 - **A4** = I2C SDA
 - **A5** = I2C SCL
 
@@ -135,7 +148,7 @@ Referring to `vfo.h` and `input.cpp`:
  * Copyright (c) 2026, Patrick Ancher zeltron2k3@gmail.com
  * https://github.com/ZelTroN-2k3/arduino-cibi-vfo-esp32
  * 
- * Version 2.2.0 (Firmware) / v2.9 (Web Interface)
+ * Version 2.2.0 (Firmware) / v2.9.4 (Web Interface)
  * 
  * All rights reserved.
  */

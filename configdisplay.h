@@ -55,8 +55,14 @@ class ConfigDisplay
     /* Update displayed config menu value */
     void setValueUint(uint32_t _value, uint16_t _color);
     void setValueInt(int32_t _value, uint16_t _color);
+    /* Update displayed about info */
+    void setAbout(uint16_t _color);
     /* Update displayed cursor position */
     void setCursorPos(int _position, uint16_t _color);
+    /* Get menu title by index */
+    void getTitle(int _index, char* _buffer, int _len);
+    /* Get total menu items */
+    int getMenuCount();
   private:
     // OLED module
     U8G2 &display_;

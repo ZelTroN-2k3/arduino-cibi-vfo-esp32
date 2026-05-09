@@ -104,6 +104,18 @@ class Config
     void setShowWaterfall(uint32_t _show) { context_.show_waterfall = _show; save(); }
     const uint32_t getLayoutMode() { return context_.layout_mode; }
     void setLayoutMode(uint32_t _mode) { context_.layout_mode = _mode; save(); }
+    const uint32_t getMenuUIStyle() { return context_.menu_ui_style; }
+    void setMenuUIStyle(uint32_t _style) { context_.menu_ui_style = _style; save(); }
+    const uint32_t getLayoutOrientation() { return context_.layout_orientation; }
+    void setLayoutOrientation(uint32_t _orientation) { context_.layout_orientation = _orientation; save(); }
+
+    /* Getters for web interface synchronization */
+    int getCurrentMenuIndex() const { return current_menu_index_; }
+    int getCurrentCursorPos() const { return current_cursor_pos_; }
+    void getCurrentMenuTitle(char* buffer, int len) const { view_->getTitle(current_menu_index_, buffer, len); }
+    void getCurrentValueFormatted(char* buffer, int len) const;
+    int getMenuCount() const { return view_->getMenuCount(); }
+
   private:
     enum
     {
@@ -118,7 +130,8 @@ class Config
       CONFIG_CLARIFIER_ADJ, // 8
       CONFIG_CLARIFIER_CENTER, // 9
       CONFIG_SMETER_ADJ,    // 10
-      CONFIG_OLED_MAX,      // 11
+      CONFIG_ABOUT,         // 11
+      CONFIG_OLED_MAX,      // 12
       CONFIG_THEME,
       CONFIG_SHOW_SMETER,
       CONFIG_SHOW_WATERFALL,
@@ -144,6 +157,8 @@ class Config
       uint32_t show_smeter;    /* 1: Show, 0: Hide */
       uint32_t show_waterfall; /* 1: Show, 0: Hide */
       uint32_t layout_mode;    /* 0, 1, 2 for desktop layouts */
+      uint32_t menu_ui_style;  /* 0: Modal, 1: Drawer */
+      uint32_t layout_orientation; /* 0: Horizontal (Auto), 1: Vertical (Forced) */
       } context_;      /* references */
     Input& input_;
     DDS& dds_;

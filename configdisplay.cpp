@@ -71,37 +71,42 @@ void ConfigDisplay::clearDisplay()
   display_.clearDisplay();
 }
 
+const static char title_cibi_default_freq[] PROGMEM = "CIBI DEFAULT FREQ.";
+const static char title_cibi_min_freq[] PROGMEM     = " CIBI FREQ. MIN.";
+const static char title_cibi_max_freq[] PROGMEM     = " CIBI FREQ. MAX.";
+const static char title_freq_step_inc[] PROGMEM     = "FREQ. STEP INCREM.";
+const static char title_fi_am_fm[] PROGMEM          = "    FI AM/FM";
+const static char title_fi_usb[] PROGMEM            = "     FI USB";
+const static char title_fi_lsb[] PROGMEM            = "     FI LSB";
+const static char title_vfo_adj[] PROGMEM           = "  VFO FREQ. ADJ";
+const static char title_clarifier_adj[] PROGMEM     = "CLARIFIER FREQ. ADJ";
+const static char title_clarifier_center[] PROGMEM  = "CLARIFIER ADC CENTER";
+const static char title_smeter_adj[] PROGMEM        = "   S-METER ADJ";
+const static char title_about[] PROGMEM             = "      ABOUT";
+
+const static char* const titles[] PROGMEM = {
+    title_cibi_default_freq,
+    title_cibi_min_freq,
+    title_cibi_max_freq,
+    title_freq_step_inc,
+    title_fi_am_fm,
+    title_fi_usb,
+    title_fi_lsb,
+    title_vfo_adj,
+    title_clarifier_adj,
+    title_clarifier_center,
+    title_smeter_adj,
+    title_about
+};
+
 void ConfigDisplay::setTitle(int _title_index, uint16_t _color)
 {
     const static int16_t TITLE_POS_X PROGMEM = 6;
     const static int16_t TITLE_POS_Y PROGMEM = 27;
     const static int16_t INDEX_POS_X PROGMEM = 30;
     const static int16_t INDEX_POS_Y PROGMEM = 11;
-    const static int16_t MAX_STR_LENGTH PROGMEM = 20;
-    const static char title_cibi_default_freq[] PROGMEM = "CIBI DEFAULT FREQ.";
-    const static char title_cibi_min_freq[] PROGMEM     = " CIBI FREQ. MIN.";
-    const static char title_cibi_max_freq[] PROGMEM     = " CIBI FREQ. MAX.";
-    const static char title_freq_step_inc[] PROGMEM     = "FREQ. STEP INCREM.";
-    const static char title_fi_am_fm[] PROGMEM          = "    FI AM/FM";
-    const static char title_fi_usb[] PROGMEM            = "     FI USB";
-    const static char title_fi_lsb[] PROGMEM            = "     FI LSB";
-    const static char title_vfo_adj[] PROGMEM           = "  VFO FREQ. ADJ";
-    const static char title_clarifier_adj[] PROGMEM     = "CLARIFIER FREQ. ADJ";
-    const static char title_clarifier_center[] PROGMEM  = "CLARIFIER ADC CENTER";
-    const static char title_smeter_adj[] PROGMEM        = "   S-METER ADJ";
-    const static char* const titles[] PROGMEM = {
-        title_cibi_default_freq,
-        title_cibi_min_freq,
-        title_cibi_max_freq,
-        title_freq_step_inc,
-        title_fi_am_fm,
-        title_fi_usb,
-        title_fi_lsb,
-        title_vfo_adj,
-        title_clarifier_adj,
-        title_clarifier_center,
-        title_smeter_adj
-    };
+    const static int16_t MAX_STR_LENGTH PROGMEM = 32;
+    
     char str[MAX_STR_LENGTH] = {0};
     int menu_index = _title_index + 1;
     int menu_items = sizeof(titles) / sizeof(char*);
@@ -111,10 +116,23 @@ void ConfigDisplay::setTitle(int _title_index, uint16_t _color)
     display_.setCursor(INDEX_POS_X, INDEX_POS_Y);
     display_.print(str);
     display_.setCursor(TITLE_POS_X,TITLE_POS_Y);
-    strcpy_P(str, (char*)pgm_read_word(&(titles[_title_index])));
+    strcpy_P(str, (char*)pgm_read_ptr(&(titles[_title_index])));
     display_.print(str);
     display_.drawHLine(0, 15, SCREEN_WIDTH);
     display_.drawHLine(0, 31, SCREEN_WIDTH);
+}
+
+void ConfigDisplay::getTitle(int _index, char* _buffer, int _len)
+{
+  if (_index >= 0 && _index < getMenuCount()) {
+    strncpy_P(_buffer, (char*)pgm_read_ptr(&(titles[_index])), _len);
+    _buffer[_len-1] = '\0';
+  }
+}
+
+int ConfigDisplay::getMenuCount()
+{
+  return sizeof(titles) / sizeof(char*);
 }
 
 void ConfigDisplay::highlightTitle(uint16_t _color)
@@ -145,6 +163,15 @@ void ConfigDisplay::setValueInt(int32_t _value, uint16_t _color)
     display_.setFont(u8g2_font_crox5hb_tr);
     display_.setCursor(VALUE_POS_X,VALUE_POS_Y);
     display_.print(str);
+}
+
+void ConfigDisplay::setAbout(uint16_t _color)
+{
+    display_.setFont(u8g2_font_6x10_tr);
+    display_.setDrawColor(_color);
+    display_.drawStr(10, 42, "Author: " AUTHOR);
+    display_.drawStr(10, 52, "Firmware: " VERSION);
+    display_.drawStr(10, 62, "Remote: " WEB_VERSION);
 }
 
 void ConfigDisplay::setCursorPos(int _position, uint16_t _color)

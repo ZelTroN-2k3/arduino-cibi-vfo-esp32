@@ -64,6 +64,7 @@ public:
   int getSMeter() const { return current_smeter_; }
   bool isTx() const { return current_tx_; }
   int getChannel() const { return current_cibi_channel_.channel; }
+  int getBandIdx() const { return current_cibi_channel_.band; }
   bool isBis() const { return current_cibi_channel_.bis; }
   /* @brief get band index 
    * @param: frequency
