@@ -38,12 +38,12 @@ This project is an adaptation for the **Arduino Nano ESP32** of the original dig
 
 The project includes a powerful, responsive web interface for remote control and advanced configuration:
 - **Web Interface**:
-  - ![Web Interface Horizontal](images/Interface-Web-2.9.4-Affichage-Horizontale.png)
-  - ![Web Interface Vertical](images/Interface-Web-2.9.4-Affichage-Verticale.png)
-  - ![Web Interface Advenced Settings](images/Interface-Web-2.9.4-Advenced-Settings.png)
+  ![Web Interface Horizontal](images/Interface-Web-2.9.4-Affichage-Horizontale.png)
+  ![Web Interface Vertical](images/Interface-Web-2.9.4-Affichage-Verticale.png)
+  ![Web Interface Advenced Settings](images/Interface-Web-2.9.4-Advenced-Settings.png)
 - **Mobile Web Interface**:
-  - ![Mobile Web Interface](images/Mobile-Web-Interface.2.9.4.jpeg)
-  - ![Mobile Web Interface Advenced Settings](images/Mobile-Web-Interface.Advenced.Settings2.9.4.jpeg)
+  ![Mobile Web Interface](images/Mobile-Web-Interface.2.9.4.jpeg)
+  ![Mobile Web Interface Advenced Settings](images/Mobile-Web-Interface.Advenced.Settings2.9.4.jpeg)
 - **Professional Display**: Realistic **'Seven Segment'** digital font for high-precision frequency and channel indicators.
 - **Dual S-Meter Display**: Simultaneous textual (S-points/dB) and high-resolution visual progress bar for signal monitoring.
 - **Dedicated Channel LCD**: Large integrated LCD-style display specifically for CB channel visualization (with Alpha/Bis support).
